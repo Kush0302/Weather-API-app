@@ -2,6 +2,8 @@ import sys #handles system variables for python interpretor
 import requests #to import request module is useful to make request to an api
 from PyQt5.QtWidgets import (QApplication,QWidget,QLabel,QLineEdit,QPushButton,QVBoxLayout)
 from PyQt5.QtCore import Qt #QT is used for alignment
+from dotenv import load_dotenv  # import dotenv
+import os  # to access the environment variable
 
 class WeatherApp(QWidget):
     def __init__(self):  #making constructor
@@ -72,12 +74,16 @@ class WeatherApp(QWidget):
         self.get_weather_button.clicked.connect(self.get_weather) #connect signal to a slot i.e: when we click on a button we will connect a slot of get_weather
 
     def get_weather(self):
-        api_key="4ee6ca4b6a0ed0640dd8e57243bc57e6"   #creating few local variables one of them is api_key whicch store our API key
-        city=self.city_input.text()   #this local variable city helps in accesing text from line edit widget city input..
-        url=f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"  #for making API request
+        # Load the API key securely from the .env file
+        load_dotenv()  # Load environment variables from .env file
+        api_key = os.getenv("api_key")  # Get the API key from the environment
 
-        response=requests.get(url)  #response object used to access module of requests by calling get method 
-        data=response.json()  #we have to convert our response object into json format
+        city = self.city_input.text()  # this local variable city helps in accessing text from line edit widget city input..
+        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"  # for making API request
+
+        response = requests.get(url)  # response object used to access module of requests by calling get method
+        data = response.json()  # we have to convert our response object into json format
+        print(data)
 
         
         if data["cod"]==200:
