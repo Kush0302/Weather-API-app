@@ -81,13 +81,44 @@ class WeatherApp(QWidget):
         city = self.city_input.text()  # this local variable city helps in accessing text from line edit widget city input..
         url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"  # for making API request
 
-        response = requests.get(url)  # response object used to access module of requests by calling get method
-        data = response.json()  # we have to convert our response object into json format
-        print(data)
+        try:
+            response = requests.get(url)  # response object used to access module of requests by calling get method
+            response.raise_for_status()  #THis method will raise an exception if there is an HTTP errors "normally Try block doesn't do this so we have to manually type this"
+            data = response.json()  # we have to convert our response object into json format
+            print(data)
 
+            if data["cod"]==200:
+                self.display_weather(data)
+
+        except requests.exceptions.HTTPError as http_error: # HTTP exception is founded within requests module that we have imported so we can't directly say Except HTTPError
+              match response.status_code:
+                  case 400:
+                      print("Bad Request\nPlease check your input")
+                  case 401:
+                      print("Unauthorized\nInvalid API key")
+                  case 403:
+                      print("Forbidden\nAccess is denied")
+                  case 404:
+                      print("Not Found\nCity not found")
+                  case 500:
+                      print("Internal Server Error\nPlease try again later")
+                  case 502:
+                      print("Bad Gateway\nInvalid response from the server")
+                  case 503:
+                      print("Service Unavailable\nServer is down")
+                  case 504:
+                      print("Gateway Timeout\nNo response from the server")
+                  case _:
+                      print(f"HTTP error occured\n{http_error}")
+        except requests.exceptions.ConnectionError:
+            print("Connection Error\nCheck your internet connection")
+        except requests.exceptions.Timeout:
+            print("Timeout Error\nThe request timed out")
+        except requests.exceptions.TooManyRedirects:
+            print("Too many redirects\nCheck the URL")
+        except requests.exceptions.RequestException as req_error: #for network problems invalid URL
+            print(f"Request Error\n{req_error}")
         
-        if data["cod"]==200:
-            self.display_weather(data)
 
     def display_error(self, message): 
         pass
@@ -100,3 +131,4 @@ if __name__=="__main__":
     weather_app=WeatherApp() #costructed a waetherapp object
     weather_app.show()
     sys.exit(app.exec_()) #exec_() method handels events within our application e.g:closing the window
+ 
